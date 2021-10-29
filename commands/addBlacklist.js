@@ -31,6 +31,6 @@ module.exports = {
         messageToAuthor = `${username} added to the blacklist`;
       }
     }
-    return message.member.send(messageToAuthor).catch(console.error);
+    return message.channel.send(messageToAuthor).catch(console.error);
   }
 };

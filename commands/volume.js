@@ -6,6 +6,10 @@ module.exports = {
   aliases: ["v"],
   description: i18n.__("volume.description"),
   execute(message, args) {
+    const canExecute = !authorIsBlack?.commands?.some((element) => ["v", "volume"].includes(element));
+    if (!canExecute) {
+      return message.channel.send(`${message.author.username} tiene que tomar chicha`).catch(console.error);
+    }
     const queue = message.client.queue.get(message.guild.id);
 
     if (!queue) return message.reply(i18n.__("volume.errorNotQueue")).catch(console.error);

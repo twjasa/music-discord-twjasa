@@ -6,6 +6,10 @@ module.exports = {
   aliases: ["st"],
   description: i18n.__("skipto.description"),
   execute(message, args) {
+    const canExecute = !authorIsBlack?.commands?.some((element) => ["skipto", "st"].includes(element));
+    if (!canExecute) {
+      return message.channel.send(`${message.author.username} tiene que tomar chicha`).catch(console.error);
+    }
     if (!args.length || isNaN(args[0]))
       return message
         .reply(i18n.__mf("skipto.usageReply", { prefix: message.client.prefix, name: module.exports.name }))
