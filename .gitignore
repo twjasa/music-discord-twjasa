@@ -4,6 +4,8 @@
 /sounds/**
 !/sounds/putmusichere.mp3
 
+db/*.json
+
 # Logs
 logs
 *.log

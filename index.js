@@ -6,6 +6,9 @@ const { readdirSync } = require("fs");
 const { join } = require("path");
 const { TOKEN, PREFIX } = require("./util/Util");
 const i18n = require("./util/i18n");
+const lowDb = require("lowdb");
+const FileSync = require("lowdb/adapters/FileSync");
+const db = lowDb(new FileSync("./db/db.json"));
 
 const client = new Client({
   disableMentions: "everyone",
@@ -14,6 +17,7 @@ const client = new Client({
 
 client.login(TOKEN);
 client.commands = new Collection();
+client.db = db;
 client.prefix = PREFIX;
 client.queue = new Map();
 const cooldowns = new Collection();

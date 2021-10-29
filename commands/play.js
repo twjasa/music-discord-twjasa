@@ -13,6 +13,11 @@ module.exports = {
   aliases: ["p"],
   description: i18n.__("play.description"),
   async execute(message, args) {
+    const authorIsBlack = message.client.db.get("blacklist").find({ id: message.author.id }).value();
+    const canExecute = !authorIsBlack?.commands?.some((element) => ["play", "p"].includes(element));
+    if (!canExecute) {
+      return message.channel.send(`${message.author.username} tiene que tomar chicha`).catch(console.error);
+    }
     const { channel } = message.member.voice;
 
     const serverQueue = message.client.queue.get(message.guild.id);
