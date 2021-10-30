@@ -11,7 +11,7 @@ module.exports = {
   cooldown: 5,
   aliases: ["pl"],
   description: i18n.__("playlist.description"),
-  async execute(message, args) {
+  async execute(message, args, spotifyData) {
     const { channel } = message.member.voice;
     const serverQueue = message.client.queue.get(message.guild.id);
 
@@ -34,6 +34,7 @@ module.exports = {
     const pattern = /^.*(youtu.be\/|list=)([^#\&\?]*).*/gi;
     const url = args[0];
     const urlValid = pattern.test(args[0]);
+    const isSpotifyURL = args[0].match(/^(spotify:|https:\/\/[a-z]+\.spotify\.com\/)/);
 
     const queueConstruct = {
       textChannel: message.channel,
@@ -48,11 +49,22 @@ module.exports = {
 
     let playlist = null;
     let videos = [];
-
-    if (urlValid) {
+    let newSpotifySongs = false;
+    if (isSpotifyURL || urlValid) {
       try {
-        playlist = await youtube.getPlaylist(url, { part: "snippet" });
-        videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: "snippet" });
+        if (!isSpotifyURL) {
+          playlist = await youtube.getPlaylist(url, { part: "snippet" });
+          videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: "snippet" });
+        }
+        if (isSpotifyURL) {
+          newSpotifySongs = spotifyData?.tracks?.items?.map((item) => {
+            return {
+              duration: -1,
+              title: `${item.track.artists[0].name} - ${item.track.name}`,
+              url: ``
+            };
+          });
+        }
       } catch (error) {
         console.error(error);
         return message.reply(i18n.__("playlist.errorNotFoundPlaylist")).catch(console.error);
@@ -78,22 +90,28 @@ module.exports = {
       }
     }
 
-    const newSongs = videos
-      .filter((video) => video.title != "Private video" && video.title != "Deleted video")
-      .map((video) => {
-        return (song = {
-          title: video.title,
-          url: video.url,
-          duration: video.durationSeconds
+    let newSongs = [];
+    if (newSpotifySongs) {
+      newSongs = [...newSpotifySongs];
+    }
+    if (!newSpotifySongs) {
+      newSongs = videos
+        .filter((video) => video.title != "Private video" && video.title != "Deleted video")
+        .map((video) => {
+          return (song = {
+            title: video.title,
+            url: video.url,
+            duration: video.durationSeconds
+          });
         });
-      });
+    }
 
     serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
 
     let playlistEmbed = new MessageEmbed()
-      .setTitle(`${playlist.title}`)
+      .setTitle(`${newSpotifySongs ? `Spotify Playlist` : playlist.title}`)
       .setDescription(newSongs.map((song, index) => `${index + 1}. ${song.title}`))
-      .setURL(playlist.url)
+      .setURL(!newSpotifySongs ? playlist.url : "")
       .setColor("#F8AA2A")
       .setTimestamp();
 

@@ -1,7 +1,10 @@
 const ytdl = require("ytdl-core-discord");
 const scdl = require("soundcloud-downloader").default;
 const { canModifyQueue, STAY_TIME } = require("../util/Util");
+const YouTubeAPI = require("simple-youtube-api");
 const i18n = require("../util/i18n");
+const { YOUTUBE_API_KEY } = require("../util/Util");
+const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
 module.exports = {
   async play(song, message) {
@@ -18,7 +21,10 @@ module.exports = {
     const PRUNING = config ? config.PRUNING : process.env.PRUNING;
 
     const queue = message.client.queue.get(message.guild.id);
-
+    if (!song.url) {
+      const url = await youtube.searchVideos(song.title, 1, { part: "id" });
+      song.url = url[0].url;
+    }
     if (!song) {
       setTimeout(function () {
         if (queue.connection.dispatcher && message.guild.me.voice.channel) return;

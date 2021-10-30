@@ -4,8 +4,9 @@ const ytdl = require("ytdl-core");
 const YouTubeAPI = require("simple-youtube-api");
 const scdl = require("soundcloud-downloader").default;
 const https = require("https");
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, DEFAULT_VOLUME } = require("../util/Util");
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, DEFAULT_VOLUME, isSpotifyURL } = require("../util/Util");
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
+const { getData } = require("spotify-url-info");
 
 module.exports = {
   name: "play",
@@ -13,6 +14,20 @@ module.exports = {
   aliases: ["p"],
   description: i18n.__("play.description"),
   async execute(message, args) {
+    const isSpotifyURL = args[0].match(/^(spotify:|https:\/\/[a-z]+\.spotify\.com\/)/);
+    let isSpotifyPlaylist = false;
+    let spotifyData = {};
+    if (isSpotifyURL) {
+      spotifyData = await getData(isSpotifyURL.input);
+      isSpotifyPlaylist = args[0].includes("/playlist/");
+      if (!isSpotifyPlaylist) {
+        args[1] = `${spotifyData.name} ${spotifyData.artists[0].name}`;
+      }
+      if (isSpotifyPlaylist) {
+        // let t = "";
+        // const newSongs = isSpotifyPlaylist.tracks.items.map(({ track }) => {});
+      }
+    }
     const authorIsBlack = message.client.db.get("blacklist").find({ id: message.author.id }).value();
     const canExecute = !authorIsBlack?.commands?.some((element) => ["play", "p"].includes(element));
     if (!canExecute) {
@@ -47,8 +62,8 @@ module.exports = {
     const urlValid = videoPattern.test(args[0]);
 
     // Start the playlist if playlist url was provided
-    if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
-      return message.client.commands.get("playlist").execute(message, args);
+    if (isSpotifyPlaylist || (!videoPattern.test(args[0]) && playlistPattern.test(args[0]))) {
+      return message.client.commands.get("playlist").execute(message, args, spotifyData);
     } else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
       return message.client.commands.get("playlist").execute(message, args);
     }
@@ -110,7 +125,6 @@ module.exports = {
     } else {
       try {
         const results = await youtube.searchVideos(search, 1, { part: "id" });
-
         if (!results.length) {
           message.reply(i18n.__("play.songNotFound")).catch(console.error);
           return;
