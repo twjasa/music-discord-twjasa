@@ -23,7 +23,7 @@ module.exports = {
     const queue = message.client.queue.get(message.guild.id);
     if (!song.url) {
       const url = await youtube.searchVideos(song.title, 1, { part: "id" });
-      song.url = url[0].url;
+      song.url = url[0]?.url;
     }
     if (!song) {
       setTimeout(function () {

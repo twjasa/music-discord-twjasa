@@ -4,7 +4,7 @@ const ytdl = require("ytdl-core");
 const YouTubeAPI = require("simple-youtube-api");
 const scdl = require("soundcloud-downloader").default;
 const https = require("https");
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, DEFAULT_VOLUME, isSpotifyURL } = require("../util/Util");
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, DEFAULT_VOLUME } = require("../util/Util");
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const { getData } = require("spotify-url-info");
 
@@ -18,14 +18,12 @@ module.exports = {
     let isSpotifyPlaylist = false;
     let spotifyData = {};
     if (isSpotifyURL) {
-      spotifyData = await getData(isSpotifyURL.input);
+      spotifyData = await getData(isSpotifyURL.input).catch(console.error);
       isSpotifyPlaylist = args[0].includes("/playlist/");
       if (!isSpotifyPlaylist) {
         args[1] = `${spotifyData.name} ${spotifyData.artists[0].name}`;
       }
       if (isSpotifyPlaylist) {
-        // let t = "";
-        // const newSongs = isSpotifyPlaylist.tracks.items.map(({ track }) => {});
       }
     }
     const authorIsBlack = message.client.db.get("blacklist").find({ id: message.author.id }).value();

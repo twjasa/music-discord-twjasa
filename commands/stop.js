@@ -5,6 +5,8 @@ module.exports = {
   name: "stop",
   description: i18n.__("stop.description"),
   execute(message) {
+    const db = message.client.db;
+    const authorIsBlack = db.get("blacklist").find({ id: message.author.id }).value();
     const canExecute = !authorIsBlack?.commands?.some((element) => ["stop"].includes(element));
     if (!canExecute) {
       return message.channel.send(`${message.author.username} tiene que tomar chicha`).catch(console.error);

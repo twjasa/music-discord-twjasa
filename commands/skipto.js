@@ -6,6 +6,8 @@ module.exports = {
   aliases: ["st"],
   description: i18n.__("skipto.description"),
   execute(message, args) {
+    const db = message.client.db;
+    const authorIsBlack = db.get("blacklist").find({ id: message.author.id }).value();
     const canExecute = !authorIsBlack?.commands?.some((element) => ["skipto", "st"].includes(element));
     if (!canExecute) {
       return message.channel.send(`${message.author.username} tiene que tomar chicha`).catch(console.error);
@@ -33,7 +35,7 @@ module.exports = {
       queue.songs = queue.songs.slice(args[0] - 2);
     }
 
-    queue.connection.dispatcher.end();
+    queue.connection.dispatcher?.end();
     queue.textChannel
       .send(i18n.__mf("skipto.result", { author: message.author, arg: args[0] - 1 }))
       .catch(console.error);
