@@ -24,7 +24,7 @@ const cooldowns = new Collection();
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * Client Events
+ * Client Events..
  */
 client.on("ready", () => {
   console.log(`${client.user.username} ready!`);
