@@ -27,7 +27,7 @@
     "nodemon": "^2.0.14",
     "simple-youtube-api": "^5.1.1",
     "soundcloud-downloader": "^0.2.3",
-    "spotify-url-info": "^2.2.3",
+    "spotify-url-info": "^3.1.8",
     "string-progressbar": "^1.0.4",
     "ytdl-core": "^4.9.1",
     "ytdl-core-discord": "^1.3.1"
